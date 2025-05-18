@@ -1,25 +1,23 @@
-import express from 'express';
-import Post from '../models/Post.js';
+import express from "express";
+import Post from "../models/Post.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Get all posts
-router.get('/', async (req, res) => {
-  const posts = await Post.find();
-  res.json(posts);
+router.get("/", async (req, res) => {
+  // public route: get all posts
+  const posts = await Post.find();
+  res.json(posts);
 });
 
-// Get single post
-router.get('/:id', async (req, res) => {
-  const post = await Post.findById(req.params.id);
-  res.json(post);
+router.post("/", protect, async (req, res) => {
+  // protected: create post
+  const { title, content } = req.body;
+  const post = new Post({ title, content, user: req.user.id });
+  await post.save();
+  res.status(201).json(post);
 });
 
-// Create post
-router.post('/', async (req, res) => {
-  const newPost = new Post(req.body);
-  await newPost.save();
-  res.status(201).json(newPost);
-});
+// other routes...
 
 export default router;
